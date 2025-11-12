@@ -6,3 +6,4 @@ memory.db
 response.mp3
 temp.ogg
 temp.wav
+.env
