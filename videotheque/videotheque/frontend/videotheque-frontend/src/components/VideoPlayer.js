@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
+
 const VideoPlayer = () => {
   const [hasAccess, setHasAccess] = useState(false);
   const [code, setCode] = useState('');
@@ -9,7 +11,7 @@ const VideoPlayer = () => {
   const handleValidate = async () => {
     try {
       setError('');
-      const res = await fetch('http://localhost:3001/api/validate', {
+      const res = await fetch(`${API_BASE}/api/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -27,7 +29,7 @@ const VideoPlayer = () => {
     try {
       setError('');
       // demo video id is 99999 in the original file
-      const res = await fetch('http://localhost:3001/api/videos/vid001/access', {
+      const res = await fetch(`${API_BASE}/api/videos/vid001/access`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -39,7 +41,7 @@ const VideoPlayer = () => {
       }
 
       const { accessUrl } = await res.json();
-      setAccessUrl(accessUrl.startsWith('http') ? accessUrl : `http://localhost:3001${accessUrl}`);
+      setAccessUrl(accessUrl.startsWith('http') ? accessUrl : `${API_BASE}${accessUrl}`);
     } catch (err) {
       setError(err.message || 'Failed to get access');
     }

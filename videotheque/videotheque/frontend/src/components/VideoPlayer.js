@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
+
 const VideoPlayer = () => {
   const [hasAccess, setHasAccess] = useState(false);
   const [code, setCode] = useState('');
@@ -8,7 +10,7 @@ const VideoPlayer = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/videos')
+    fetch(`${API_BASE}/api/videos`)
       .then((res) => res.json())
       .then((data) => setVideos(data));
   }, []);
@@ -17,7 +19,7 @@ const VideoPlayer = () => {
     // keep the old validate API for a quick check if you like
     try {
       setError('');
-      const res = await fetch('http://localhost:3001/api/validate', {
+      const res = await fetch(`${API_BASE}/api/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -39,7 +41,7 @@ const VideoPlayer = () => {
   const requestAccess = async (videoId) => {
     try {
       setError('');
-      const res = await fetch(`http://localhost:3001/api/videos/${videoId}/access`, {
+      const res = await fetch(`${API_BASE}/api/videos/${videoId}/access`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -51,7 +53,7 @@ const VideoPlayer = () => {
       }
 
       const { accessUrl, expiresIn } = await res.json();
-      const full = accessUrl.startsWith('http') ? accessUrl : `http://localhost:3001${accessUrl}`;
+      const full = accessUrl.startsWith('http') ? accessUrl : `${API_BASE}${accessUrl}`;
       setAccessMap((m) => ({ ...m, [videoId]: { url: full, expiresAt: Date.now() + expiresIn * 1000 } }));
       setHasAccess(true);
     } catch (err) {

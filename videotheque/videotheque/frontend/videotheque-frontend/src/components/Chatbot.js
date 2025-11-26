@@ -4,11 +4,13 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([{ from: 'bot', text: 'Salut, je suis là pour t’aider 💬' }]);
   const [input, setInput] = useState('');
 
+  const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
+
   const handleSend = async () => {
     const newMessages = [...messages, { from: 'user', text: input }];
 
     // Appel fictif à ton backend ou à une API IA
-    const response = await fetch('http://localhost:3001/api/chat', {
+    const response = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: input }),

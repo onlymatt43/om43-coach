@@ -4,7 +4,8 @@ const VideoGrid = () => {
   const [videos, setVideos] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/videos')
+    const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
+    fetch(`${API_BASE}/api/videos`)
       .then((res) => res.json())
       .then((data) => setVideos(data));
   }, []);
