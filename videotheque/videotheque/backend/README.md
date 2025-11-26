@@ -27,6 +27,13 @@ Database / migration
 - The backend now uses SQLite (file: `data/db.sqlite`) for codes storage. On first run, if `data/db.sqlite` doesn't exist but `data/codes.json` does, the server will auto-import codes from `codes.json` into the DB.
 - Using a DB allows atomic updates and easier migration in the future; if you want Postgres instead I can add a migration layer.
 
+Troubleshooting / Node versions
+- If you're running a very new Node version (eg. Node 23) you may encounter native build failures when installing `better-sqlite3` because prebuilt binaries aren't available for that Node release yet. There are two easy options:
+	1) Use Node 18 (recommended) — this is the runtime used for deployments and has prebuilt better-sqlite3 binaries. Use nvm or your preferred version manager: `nvm install 18 && nvm use 18`.
+	2) If you can't switch Node, the backend will automatically fall back to the original `data/codes.json` file for local dev when `better-sqlite3` isn't available. This allows the server to run without building native modules.
+
+If you want me to change the db driver to a pure-JS alternative so native builds are never needed, I can implement that as well.
+
 Admin & merchant integration (gift cards)
 - ADMIN_API_KEY (env var) — required for admin endpoints. Use the header `x-admin-key` when calling admin endpoints.
 	- Endpoints:
@@ -62,6 +69,28 @@ curl -X POST http://localhost:3001/api/webhook/giftcard \
  - VIDEO_TOKEN_SECRET — (new) secret used to sign 1-hour access tokens for video playback. If not set the app uses a dev secret. Set this on Vercel:
 	 - Key: VIDEO_TOKEN_SECRET
 	 - Value: a long random string (e.g. generated with `openssl rand -hex 32`).
+
+Generate a VIDEO_TOKEN_SECRET (one-liner)
+-------------------------------------------------
+On macOS or Linux you can quickly generate a 32-byte hex secret (recommended) with one of the following one-liners and copy it to your clipboard:
+
+ - With openssl (macOS):
+	 ```bash
+	 openssl rand -hex 32 | pbcopy
+	 # now paste into your .env or provider secrets
+	 ```
+
+ - With node (works if Node is available):
+	 ```bash
+	 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))" | pbcopy
+	 ```
+
+ - With Python 3 (if openssl/Node aren't available):
+	 ```bash
+	 python3 -c 'import secrets; print(secrets.token_hex(32))' | pbcopy
+	 ```
+
+If you prefer a small script, see `./scripts/gen_video_secret.sh` (handy cross-platform fallback). Using any of the above will produce a secure 64-character hex string suitable as `VIDEO_TOKEN_SECRET`.
 
 Access flow for 1-hour sessions (Bunny)
 - The backend supports generating an access token for a specific video via POST /api/videos/:id/access.
