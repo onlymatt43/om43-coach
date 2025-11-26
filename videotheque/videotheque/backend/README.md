@@ -22,6 +22,39 @@ API endpoints (examples)
 Environment variables
 - BUNNY_API_KEY and BUNNY_LIBRARY_ID — will make `/api/videos` use Bunny.net API. Falls back to `data/videos.json` if not present.
 - OPENAI_API_KEY — enables the chat route to use OpenAI.
+
+Admin & merchant integration (gift cards)
+- ADMIN_API_KEY (env var) — required for admin endpoints. Use the header `x-admin-key` when calling admin endpoints.
+	- Endpoints:
+		- GET /api/admin/codes → list all codes
+		- POST /api/admin/codes { count, prefix, length } → create single or bulk codes
+		- GET /api/admin/codes/export → CSV export of codes
+
+- MERCHANT_API_KEY (env var) — merchant webhook key. Merchant calls `POST /api/webhook/giftcard` with `{ quantity, prefix, customerRef }` to create codes programmatically; the response contains the codes which can be printed and delivered.
+
+Security notes
+Usage examples
+
+Generate 3 codes via admin API (local dev default admin key shown):
+
+```bash
+curl -X POST http://localhost:3001/api/admin/codes \
+	-H "Content-Type: application/json" \
+	-H "x-admin-key: dev_admin_key_change_me" \
+	-d '{"count":3, "prefix":"GFT"}'
+```
+
+Webhook example (merchant creates 2 gift codes for order-789):
+
+```bash
+curl -X POST http://localhost:3001/api/webhook/giftcard \
+	-H "Content-Type: application/json" \
+	-H "x-merchant-key: dev_merchant_key_change_me" \
+	-d '{"quantity":2, "prefix":"GFTWEB", "customerRef":"order-789"}'
+```
+
+- Keep `ADMIN_API_KEY`, `MERCHANT_API_KEY` and `VIDEO_TOKEN_SECRET` secret — add them in Vercel's Project > Settings > Environment Variables.
+
  - VIDEO_TOKEN_SECRET — (new) secret used to sign 1-hour access tokens for video playback. If not set the app uses a dev secret. Set this on Vercel:
 	 - Key: VIDEO_TOKEN_SECRET
 	 - Value: a long random string (e.g. generated with `openssl rand -hex 32`).
