@@ -18,9 +18,10 @@ router.get('/videos', async (req, res) => {
   // if Bunny env vars present, try calling Bunny API
   if (BUNNY_API_KEY && BUNNY_LIBRARY_ID) {
     try {
+      // set a request timeout so the serverless function fails fast if Bunny is slow/unreachable
       const response = await axios.get(
         `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`,
-        { headers: { AccessKey: BUNNY_API_KEY } }
+        { headers: { AccessKey: BUNNY_API_KEY }, timeout: 5000 }
       );
 
       const videos = (response.data.items || []).map((video) => ({
@@ -33,7 +34,7 @@ router.get('/videos', async (req, res) => {
 
       return res.json(videos);
     } catch (err) {
-      console.error('Bunny API failed, falling back to local videos.json —', err?.message || err);
+      console.warn('Bunny API failed or timed out, falling back to local videos.json —', err?.message || err);
       // fall through to local file
     }
   }
